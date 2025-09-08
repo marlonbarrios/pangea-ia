@@ -183,7 +183,7 @@ function Transcript({
                             </div>
                             {data.revisedPrompt && (
                               <div className="mt-2 text-xs text-gray-600 italic">
-                                "{data.revisedPrompt}"
+                                &ldquo;{data.revisedPrompt}&rdquo;
                               </div>
                             )}
                             <div className="mt-1 flex items-center gap-3 text-xs">
@@ -203,7 +203,7 @@ function Transcript({
                                       getImageFileName(data.originalPrompt, 'generated')
                                     );
                                   } catch (error) {
-                                    console.log('Primary download failed, trying direct method');
+                                    console.log('Primary download failed, trying direct method:', error);
                                     downloadImageDirectly(data.imageUrl);
                                   }
                                 }}
@@ -317,7 +317,7 @@ function Transcript({
                           </div>
                           {data.revisedPrompt && (
                             <div className="mt-2 text-xs text-gray-600 italic">
-                              "{data.revisedPrompt}"
+                              &ldquo;{data.revisedPrompt}&rdquo;
                             </div>
                           )}
                           <div className="mt-1 flex items-center gap-3 text-xs">

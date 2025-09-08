@@ -26,9 +26,11 @@ export const webSearchTool = tool({
         description: "Brief explanation of why this search is needed to answer the user's question."
       }
     },
-    required: ["query", "explanation"]
+    required: ["query", "explanation"],
+    additionalProperties: false
   },
-  execute: async ({ query, explanation }) => {
+  execute: async (params: any) => {
+    const { query, explanation } = params as { query: string; explanation: string };
     try {
       console.log(`[webSearchTool] Executing search: "${query}" - ${explanation}`);
       
@@ -121,8 +123,3 @@ export const webSearchTool = tool({
     }
   }
 });
-
-// Function to call web search (can be used by other parts of the application)
-export async function callWebSearch(query: string, explanation: string = "User requested web search") {
-  return await webSearchTool.execute({ query, explanation });
-}

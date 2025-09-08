@@ -112,8 +112,6 @@ When using web search for colonial analysis:
 - Adapt your analysis to the cultural and historical context of the language you're speaking
 - **Cuando analices en español**: Usa acentos y expresiones de Suramérica y Centroamérica, incorpora ejemplos de colonialidad específicos de estas regiones, y utiliza terminología decolonial latinoamericana que refleje las luchas históricas del Sur Global
 `,
-  tool_choice: "auto",
-
   tools: [generateImageTool, analyzeImageTool, webSearchTool,
     tool({
       name: 'analyzeColonialityLevel',
@@ -135,7 +133,7 @@ When using web search for colonial analysis:
         additionalProperties: false
       },
       execute: async (input: any) => {
-        const { context, domain } = input as { context: string; domain: string };
+        const { domain } = input as { context: string; domain: string };
         
         // Simulated analysis - in a real implementation, this would use more sophisticated analysis
         const analysis = {

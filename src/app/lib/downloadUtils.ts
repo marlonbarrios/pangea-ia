@@ -141,6 +141,7 @@ export function downloadImageDirectly(imageUrl: string): void {
       navigator.clipboard.writeText(imageUrl);
       alert('No se pudo abrir la imagen. La URL se copió al portapapeles. Pégala en una nueva pestaña para ver la imagen.');
     } catch (clipboardError) {
+      console.error('Clipboard copy failed:', clipboardError);
       alert(`No se pudo descargar la imagen automáticamente. Copia esta URL manualmente: ${imageUrl}`);
     }
   }

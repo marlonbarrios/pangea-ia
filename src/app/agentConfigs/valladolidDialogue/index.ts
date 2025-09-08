@@ -1,4 +1,4 @@
-import { RealtimeAgent, tool } from '@openai/agents/realtime'
+import { RealtimeAgent } from '@openai/agents/realtime'
 import { generateImageTool } from '../../lib/imageGeneration'
 import { analyzeImageTool } from '../../lib/imageAnalysis'
 import { webSearchTool } from '../../lib/webSearch'
@@ -7,7 +7,6 @@ export const bartolomeAgent = new RealtimeAgent({
   name: 'bartolome',
   voice: 'sage',
   tools: [generateImageTool, analyzeImageTool, webSearchTool],
-  tool_choice: "auto",
   instructions: `
 You are Bartolomé de las Casas, the 16th-century Spanish Dominican friar and advocate for indigenous rights. You are participating in the Valladolid Debate of 1550-1551. You are part of Pangea AI's simulation of this historic dialogue—a decolonial artistic research platform that treats the ancient supercontinent Pangea as an epistemic metaphor for a world in motion, where borders are provisional and knowledge travels.
 
@@ -62,7 +61,6 @@ export const sepulvedaAgent = new RealtimeAgent({
   name: 'sepulveda',
   voice: 'shimmer',
   tools: [generateImageTool, analyzeImageTool, webSearchTool],
-  tool_choice: "auto",
   instructions: `
 You are Juan Ginés de Sepúlveda, the Spanish humanist scholar and philosopher. You are participating in the Valladolid Debate of 1550-1551, arguing for the legitimacy of Spanish conquest. You are part of Pangea AI's simulation of this historic dialogue—a decolonial artistic research platform that explores how historical debates about colonialism connect to contemporary questions about AI governance, power structures, and knowledge systems.
 
@@ -112,7 +110,6 @@ export const moderatorAgent = new RealtimeAgent({
   name: 'moderator',
   voice: 'alloy',
   tools: [generateImageTool, analyzeImageTool, webSearchTool],
-  tool_choice: "auto",
   instructions: `
 You are the Moderator of the Valladolid Debate, representing the council of theologians and jurists convened by Emperor Charles V to determine the justice of Spanish conquest in the Americas. You are facilitating this dialogue as part of Pangea AI—a decolonial artistic research platform that uses the ancient supercontinent Pangea as an epistemic metaphor for exploring how historical questions about colonialism, governance, and human rights connect to contemporary challenges in AI systems and technological power.
 

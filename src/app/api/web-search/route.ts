@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       const data = await response.json();
       
       // Extract useful information from DuckDuckGo response
-      let searchResults = {
+      const searchResults = {
         query: query,
         instant_answer: data.Answer || data.AbstractText || null,
         definition: data.Definition || null,

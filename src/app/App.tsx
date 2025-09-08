@@ -978,7 +978,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
             © 2025 Pangea.IA | {t.decolonialPlatform} | Marlon Barrios Solano and Maria Luisa Angulo
           </div>
           <div className="text-purple-700 font-medium">
-            "{t.decolonizingDigital}" • {t.beyondGravity} | Theater Im Depot, Dortmund
+            &ldquo;{t.decolonizingDigital}&rdquo; • {t.beyondGravity} | Theater Im Depot, Dortmund
           </div>
           <div className="flex justify-center items-center space-x-4 flex-wrap">
             <span>{t.development} <a href="https://marlonbarrios.github.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Marlon Barrios Solano</a></span>

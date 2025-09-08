@@ -53,11 +53,12 @@ Use this when the user explicitly requests an image, visualization, or artistic 
     additionalProperties: false
   },
   
-  execute: async (params: ImageGenerationParams) => {
+  execute: async (params: any) => {
+    const { prompt, style = 'decolonial', size = '1024x1024' } = params as ImageGenerationParams;
     const result = await callImageGeneration({
-      prompt: params.prompt,
-      style: params.style || 'decolonial',
-      size: params.size || '1024x1024'
+      prompt,
+      style,
+      size
     });
     
     if (result.success) {

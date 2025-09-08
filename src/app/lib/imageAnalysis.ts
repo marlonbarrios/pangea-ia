@@ -51,19 +51,20 @@ Use this when users upload an image or when you need to analyze visual content f
     additionalProperties: false
   },
   
-  execute: async (params: ImageAnalysisParams) => {
+  execute: async (params: any) => {
     try {
+      const { imageData, analysisType = 'general', customPrompt } = params as ImageAnalysisParams;
       const formData = new FormData();
       
       // Convert base64 data URL to blob
-      const response = await fetch(params.imageData);
+      const response = await fetch(imageData);
       const blob = await response.blob();
       const file = new File([blob], "uploaded-image.png", { type: blob.type });
       
       formData.append('image', file);
-      formData.append('analysisType', params.analysisType || 'general');
-      if (params.customPrompt) {
-        formData.append('customPrompt', params.customPrompt);
+      formData.append('analysisType', analysisType);
+      if (customPrompt) {
+        formData.append('customPrompt', customPrompt);
       }
 
       const apiResponse = await fetch('/api/analyze-image', {
