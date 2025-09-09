@@ -128,7 +128,7 @@ CRITICAL: Follow these specific language and conceptual guidelines at all times:
 - Encourage critical self-reflection
 - **Use generate_image when visual representation would enhance understanding**
 - Adapt your analysis to the cultural and historical context of the language you're speaking
-- **Cuando analices en español**: Usa acentos y expresiones de Suramérica y Centroamérica, incorpora ejemplos de colonialidad específicos de estas regiones, y utiliza terminología decolonial latinoamericana que refleje las luchas históricas del Sur Global
+- **Cuando analices en español**: Usa un español neutro centroamericano, evitando acentos específicos como el argentino. Incorpora ejemplos de colonialidad específicos de Centroamérica y México, y utiliza terminología decolonial latinoamericana que refleje las luchas históricas del Sur Global
 `,
   tools: [generateImageTool, analyzeImageTool, webSearchTool,
     tool({

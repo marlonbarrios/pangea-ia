@@ -128,7 +128,7 @@ function Transcript({
               const containerClasses = `flex justify-end flex-col ${
                 isUser ? "items-end" : "items-start"
               }`;
-              const bubbleBase = `max-w-lg p-3 ${
+              const bubbleBase = `max-w-4xl p-3 ${
                 isUser ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-black"
               }`;
               const isBracketedMessage =
@@ -142,7 +142,7 @@ function Transcript({
 
               return (
                 <div key={itemId} className={containerClasses}>
-                  <div className="max-w-lg">
+                  <div className="max-w-4xl">
                     <div
                       className={`${bubbleBase} rounded-t-xl ${
                         guardrailResult ? "" : "rounded-b-xl"

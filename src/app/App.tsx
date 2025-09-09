@@ -23,13 +23,15 @@ import { createModerationGuardrail } from "@/app/agentConfigs/guardrails";
 import { allAgentSets, defaultAgentSetKey } from "@/app/agentConfigs";
 import { decolonialConsultantScenario } from "@/app/agentConfigs/decolonialConsultant";
 import { thermometerColonialityScenario } from "@/app/agentConfigs/thermometerColoniality";
-import { valladolidDialogueScenario } from "@/app/agentConfigs/valladolidDialogue";
+import { valladolidDebateScenario } from "@/app/agentConfigs/valladolidDebate";
+import { pangeaLatentSpaceScenario } from "@/app/agentConfigs/pangeaLatentSpace";
 
 // Map used by connect logic for scenarios defined via the SDK.
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
   Pangea_IA: decolonialConsultantScenario,
   thermometerColoniality: thermometerColonialityScenario,
-  valladolidDialogue: valladolidDialogueScenario,
+  valladolidDebate: valladolidDebateScenario,
+  pangeaLatentSpace: pangeaLatentSpaceScenario,
 };
 
 import useAudioDownload from "./hooks/useAudioDownload";
@@ -94,6 +96,7 @@ function App() {
   } = useRealtimeSession({
     onConnectionChange: (s) => setSessionStatus(s as SessionStatus),
     onAgentHandoff: (agentName: string) => {
+      console.log('[APP] Agent handoff triggered to:', agentName);
       handoffTriggeredRef.current = true;
       setSelectedAgentName(agentName);
     },
@@ -103,7 +106,7 @@ function App() {
     useState<SessionStatus>("DISCONNECTED");
 
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] =
-    useState<boolean>(true);
+    useState<boolean>(false);
   const [userText, setUserText] = useState<string>("");
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
@@ -161,11 +164,13 @@ function App() {
     setSelectedAgentConfigSet(agents);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
-      connectToRealtime();
-    }
-  }, [selectedAgentName]);
+  // Removed auto-connection effect to prevent connecting on page load
+  // Users must manually click "Connect" button to start session
+  // useEffect(() => {
+  //   if (selectedAgentName && sessionStatus === "DISCONNECTED") {
+  //     connectToRealtime();
+  //   }
+  // }, [selectedAgentName]);
 
   useEffect(() => {
     if (
@@ -206,9 +211,17 @@ function App() {
   };
 
   const connectToRealtime = async () => {
+    console.log('[connectToRealtime] Called with status:', sessionStatus);
+    console.log('[APP] selectedAgentName:', selectedAgentName);
+    console.log('[APP] sdkScenarioMap keys:', Object.keys(sdkScenarioMap));
+    console.log('[APP] valladolidDebate agents:', sdkScenarioMap.valladolidDebate?.map(a => a.name));
     const agentSetKey = searchParams.get("agentConfig") || "default";
     if (sdkScenarioMap[agentSetKey]) {
-      if (sessionStatus !== "DISCONNECTED") return;
+      if (sessionStatus !== "DISCONNECTED") {
+        console.log('[connectToRealtime] Already connected/connecting, returning');
+        return;
+      }
+      console.log('[connectToRealtime] Setting status to CONNECTING');
       setSessionStatus("CONNECTING");
 
       try {
@@ -217,7 +230,18 @@ function App() {
 
         // Ensure the selectedAgentName is first so that it becomes the root
         const reorderedAgents = [...sdkScenarioMap[agentSetKey]];
+        console.log('[APP] Available agents:', reorderedAgents.map(a => a.name));
+        console.log('[APP] Looking for selectedAgentName:', selectedAgentName);
         const idx = reorderedAgents.findIndex((a) => a.name === selectedAgentName);
+        console.log('[APP] Agent index found:', idx);
+        
+        if (idx === -1) {
+          console.error(`Agent ${selectedAgentName} not found in scenario ${agentSetKey}`);
+          console.error('Available agents:', reorderedAgents.map(a => a.name));
+          setSessionStatus("DISCONNECTED");
+          return;
+        }
+        
         if (idx > 0) {
           const [agent] = reorderedAgents.splice(idx, 1);
           reorderedAgents.unshift(agent);
@@ -225,8 +249,14 @@ function App() {
 
         const companyName = "Pangea_IA";
         const guardrail = createModerationGuardrail(companyName);
+        
+        console.log('[APP] About to connect with reordered agents:', reorderedAgents.map(a => a.name));
+        console.log('[APP] Root agent (first):', reorderedAgents[0]?.name);
+        console.log('[APP] Root agent object:', reorderedAgents[0]);
+        console.log('[APP] Root agent tools:', reorderedAgents[0]?.tools?.map(t => t.name));
 
-        await connect({
+        console.log('[APP] Calling connect() now...');
+        const connectPromise = connect({
           getEphemeralKey: async () => EPHEMERAL_KEY,
           initialAgents: reorderedAgents,
           audioElement: sdkAudioElement,
@@ -235,8 +265,17 @@ function App() {
             addTranscriptBreadcrumb,
           },
         });
+        
+        // Add a timeout to detect if connect() is hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connect timeout after 30 seconds')), 30000)
+        );
+        
+        await Promise.race([connectPromise, timeoutPromise]);
+        console.log('[APP] Connect call completed successfully');
       } catch (err) {
         console.error("Error connecting via SDK:", err);
+        console.error("Full error details:", err);
         setSessionStatus("DISCONNECTED");
       }
       return;
@@ -365,11 +404,55 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
     sendClientEvent({ type: 'response.create' }, 'trigger response PTT');
   };
 
+  // Add spacebar support for push-to-talk
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if spacebar is pressed, push-to-talk is active, 
+      // and user is not already speaking
+      if (
+        event.code === 'Space' && 
+        isPTTActive && 
+        sessionStatus === 'CONNECTED' && 
+        !isPTTUserSpeaking
+      ) {
+        // Prevent spacebar from scrolling the page or triggering other actions
+        event.preventDefault();
+        handleTalkButtonDown();
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      // Only trigger if spacebar is released and user was speaking
+      if (
+        event.code === 'Space' && 
+        isPTTActive && 
+        sessionStatus === 'CONNECTED' && 
+        isPTTUserSpeaking
+      ) {
+        event.preventDefault();
+        handleTalkButtonUp();
+      }
+    };
+
+    // Add event listeners to the document
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    // Cleanup event listeners on component unmount
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [isPTTActive, sessionStatus, isPTTUserSpeaking]);
+
   const onToggleConnection = () => {
+    console.log('[onToggleConnection] Current status:', sessionStatus);
     if (sessionStatus === "CONNECTED" || sessionStatus === "CONNECTING") {
+      console.log('[onToggleConnection] Disconnecting...');
       disconnectFromRealtime();
       setSessionStatus("DISCONNECTED");
     } else {
+      console.log('[onToggleConnection] Connecting...');
       connectToRealtime();
     }
   };
@@ -387,9 +470,13 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
     const newAgentName = e.target.value;
     // Reconnect session with the newly selected agent as root so that tool
     // execution works correctly.
+    const wasConnected = sessionStatus === "CONNECTED";
     disconnectFromRealtime();
     setSelectedAgentName(newAgentName);
-    // connectToRealtime will be triggered by effect watching selectedAgentName
+    // Only auto-reconnect if we were previously connected
+    if (wasConnected) {
+      setTimeout(() => connectToRealtime(), 100); // Small delay to ensure disconnect completes
+    }
   };
 
   // Because we need a new connection, refresh the page when codec changes
@@ -400,14 +487,14 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
   };
 
   useEffect(() => {
-    const storedPushToTalkUI = localStorage.getItem("pushToTalkUI");
-    if (storedPushToTalkUI) {
-      setIsPTTActive(storedPushToTalkUI === "true");
-    }
-    const storedLogsExpanded = localStorage.getItem("logsExpanded");
-    if (storedLogsExpanded) {
-      setIsEventsPaneExpanded(storedLogsExpanded === "true");
-    }
+    // Push-to-talk should start disabled by default, ignoring localStorage
+    // Users can manually enable it by checking the checkbox
+    setIsPTTActive(false);
+    
+    // Logs panel should start collapsed by default, ignoring localStorage
+    // Users can manually expand it by clicking the logs button
+    setIsEventsPaneExpanded(false);
+    
     const storedAudioPlaybackEnabled = localStorage.getItem(
       "audioPlaybackEnabled"
     );
@@ -502,7 +589,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Enviar mensaje",
       typeMessage: "Escribe tu mensaje...",
       pushToTalk: "Presionar para hablar",
-      talk: "Hablar",
+      talk: "Hablar (Espacio)",
       audioPlayback: "Reproducción de audio",
       codec: "Códec:",
       decolonialPlatform: "Plataforma de IA Decolonial",
@@ -547,7 +634,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Send message",
       typeMessage: "Type your message...",
       pushToTalk: "Push to talk",
-      talk: "Talk",
+      talk: "Talk (Space)",
       audioPlayback: "Audio playback",
       codec: "Codec:",
       decolonialPlatform: "Decolonial AI Research Platform",
@@ -592,7 +679,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Envoyer message",
       typeMessage: "Tapez votre message...",
       pushToTalk: "Appuyer pour parler",
-      talk: "Parler",
+      talk: "Parler (Espace)",
       audioPlayback: "Lecture audio",
       codec: "Codec :",
       decolonialPlatform: "Plateforme de Recherche IA Décoloniale",
@@ -618,7 +705,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Nachricht senden",
       typeMessage: "Nachricht eingeben...",
       pushToTalk: "Drücken zum Sprechen",
-      talk: "Sprechen",
+      talk: "Sprechen (Leertaste)",
       audioPlayback: "Audio-Wiedergabe",
       codec: "Codec:",
       decolonialPlatform: "Dekoloniale KI-Forschungsplattform",
@@ -630,6 +717,51 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       portfolio: "Portfolio",
       poweredBy: "Powered by",
       lastUpdated: "Zuletzt aktualisiert"
+    },
+    "english-german": {
+      scenario: "Scenario / Szenario",
+      agent: "Agent / Agent",
+      language: "Language / Sprache",
+      connect: "Connect / Verbinden",
+      disconnect: "Disconnect / Trennen",
+      connecting: "Connecting... / Verbinde...",
+      connected: "Connected / Verbunden", 
+      disconnected: "Disconnected / Getrennt",
+      logs: "Logs / Protokolle",
+      sendMessage: "Send message / Nachricht senden",
+      typeMessage: "Type your message... / Nachricht eingeben...",
+      pushToTalk: "Push to talk / Drücken zum Sprechen",
+      talk: "Talk (Space) / Sprechen (Leertaste)",
+      audioPlayback: "Audio playback / Audio-Wiedergabe",
+      codec: "Codec / Codec:",
+      decolonialPlatform: "Decolonial AI Platform / Dekoloniale KI-Plattform",
+      decolonizingDigital: "Decolonizing the Digital / Das Digitale Dekolonisieren",
+      beyondGravity: "Beyond Gravity Festival / Beyond Gravity Festival",
+      exploring: "Exploring decolonial AI approaches / Erforschung dekolonialer KI-Ansätze",
+      globalSouth: "Global South Perspectives / Perspektiven des Globalen Südens",
+      development: "Development by / Entwicklung von",
+      portfolio: "Portfolio / Portfolio",
+      poweredBy: "Powered by / Unterstützt von",
+      lastUpdated: "Last updated / Zuletzt aktualisiert",
+      uploadImage: "Upload image / Bild hochladen",
+      analyzing: "Analyzing image... / Bild analysieren...",
+      analysisGeneral: "General Analysis / Allgemeine Analyse",
+      analysisDecolonial: "Decolonial Perspective / Dekoloniale Perspektive",
+      analysisArtistic: "Artistic Analysis / Künstlerische Analyse",
+      analysisTechnical: "Technical Analysis / Technische Analyse",
+      analysisCultural: "Cultural Perspective / Kulturelle Perspektive",
+      analysisCustom: "Custom Prompt / Benutzerdefiniert",
+      customPromptPlaceholder: "Write your custom prompt... / Schreiben Sie Ihren benutzerdefinierten Prompt...",
+      dropOrClick: "Drag image here or click / Bild hierher ziehen oder klicken",
+      supportedFormats: "Formats: JPG, PNG, GIF, WebP (max. 10MB) / Formate: JPG, PNG, GIF, WebP (max. 10MB)",
+      errorInvalidImage: "Please select a valid image / Bitte wählen Sie ein gültiges Bild",
+      errorImageTooLarge: "Image too large. Max 10MB / Bild zu groß. Max 10MB",
+      errorAnalyzing: "Error analyzing image / Fehler beim Analysieren des Bildes",
+      analysisType: "Analysis type / Analysetyp",
+      selectImage: "Select image / Bild auswählen",
+      downloadImage: "Download image / Bild herunterladen",
+      viewFullImage: "View full image / Vollbild anzeigen",
+      downloadingImage: "Downloading image... / Bild herunterladen..."
     },
     português: {
       scenario: "Cenário",
@@ -644,7 +776,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Enviar mensagem",
       typeMessage: "Digite sua mensagem...",
       pushToTalk: "Pressionar para falar",
-      talk: "Falar",
+      talk: "Falar (Espaço)",
       audioPlayback: "Reprodução de áudio",
       codec: "Codec:",
       decolonialPlatform: "Plataforma de Pesquisa IA Decolonial",
@@ -670,7 +802,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Invia messaggio", 
       typeMessage: "Scrivi il tuo messaggio...",
       pushToTalk: "Premi per parlare",
-      talk: "Parla",
+      talk: "Parla (Spazio)",
       audioPlayback: "Riproduzione audio",
       codec: "Codec:",
       decolonialPlatform: "Piattaforma di Ricerca IA Decoloniale",
@@ -696,7 +828,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "发送消息",
       typeMessage: "输入您的消息...",
       pushToTalk: "按住说话",
-      talk: "说话",
+      talk: "说话 (空格)",
       audioPlayback: "音频播放",
       codec: "编解码器:",
       decolonialPlatform: "去殖民人工智能研究平台",
@@ -722,7 +854,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "メッセージを送信",
       typeMessage: "メッセージを入力...",
       pushToTalk: "押して話す",
-      talk: "話す",
+      talk: "話す (スペース)",
       audioPlayback: "音声再生",
       codec: "コーデック:",
       decolonialPlatform: "脱植民地AI研究プラットフォーム",
@@ -748,7 +880,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "إرسال رسالة",
       typeMessage: "اكتب رسالتك...",
       pushToTalk: "اضغط للتحدث",
-      talk: "تحدث",
+      talk: "تحدث (مسافة)",
       audioPlayback: "تشغيل الصوت",
       codec: "برنامج الترميز:",
       decolonialPlatform: "منصة بحث الذكاء الاصطناعي اللاستعماري",
@@ -774,7 +906,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "संदेश भेजें",
       typeMessage: "अपना संदेश टाइप करें...",
       pushToTalk: "बोलने के लिए दबाएं",
-      talk: "बात करें",
+      talk: "बात करें (स्पेस)",
       audioPlayback: "ऑडियो प्लेबैक",
       codec: "कोडेक:",
       decolonialPlatform: "उपनिवेशवाद-विरोधी AI अनुसंधान प्लेटफॉर्म",
@@ -800,7 +932,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       sendMessage: "Отправить сообщение",
       typeMessage: "Введите ваше сообщение...",
       pushToTalk: "Нажать для разговора",
-      talk: "Говорить",
+      talk: "Говорить (Пробел)",
       audioPlayback: "Воспроизведение аудио",
       codec: "Кодек:",
       decolonialPlatform: "Деколониальная ИИ Исследовательская Платформа",
@@ -908,17 +1040,18 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
                 onChange={(e) => setSelectedLanguage(e.target.value)}
                 className="appearance-none border border-gray-300 rounded-lg text-sm px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
               >
-                <option value="español">🇪🇸 Español</option>
-                <option value="english">🇺🇸 English</option>
-                <option value="français">🇫🇷 Français</option>
-                <option value="deutsch">🇩🇪 Deutsch</option>
-                <option value="português">🇧🇷 Português</option>
-                <option value="italiano">🇮🇹 Italiano</option>
-                <option value="中文">🇨🇳 中文</option>
-                <option value="日本語">🇯🇵 日本語</option>
-                <option value="العربية">🇸🇦 العربية</option>
-                <option value="हिन्दी">🇮🇳 हिन्दी</option>
-                <option value="русский">🇷🇺 Русский</option>
+                <option value="español">Español</option>
+                <option value="english">English</option>
+                <option value="english-german">English + German</option>
+                <option value="français">Français</option>
+                <option value="deutsch">Deutsch</option>
+                <option value="português">Português</option>
+                <option value="italiano">Italiano</option>
+                <option value="中文">中文</option>
+                <option value="日本語">日本語</option>
+                <option value="العربية">العربية</option>
+                <option value="हिन्दी">हिन्दी</option>
+                <option value="русский">Русский</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
                 <svg

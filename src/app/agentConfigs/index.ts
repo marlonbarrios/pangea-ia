@@ -1,6 +1,7 @@
 import { decolonialConsultantScenario } from './decolonialConsultant';
 import { thermometerColonialityScenario } from './thermometerColoniality';
-import { valladolidDialogueScenario } from './valladolidDialogue';
+import { valladolidDebateScenario } from './valladolidDebate';
+import { pangeaLatentSpaceScenario } from './pangeaLatentSpace';
 
 import type { RealtimeAgent } from '@openai/agents/realtime';
 
@@ -8,7 +9,8 @@ import type { RealtimeAgent } from '@openai/agents/realtime';
 export const allAgentSets: Record<string, RealtimeAgent[]> = {
   Pangea_IA: decolonialConsultantScenario,
   thermometerColoniality: thermometerColonialityScenario,
-  valladolidDialogue: valladolidDialogueScenario,
+  valladolidDebate: valladolidDebateScenario,
+  pangeaLatentSpace: pangeaLatentSpaceScenario,
 };
 
 export const defaultAgentSetKey = 'Pangea_IA';
