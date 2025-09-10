@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-// Define the allowed moderation categories only once
+// Define the allowed moderation categories for artistic research project
 export const MODERATION_CATEGORIES = [
-  "OFFENSIVE",
-  "OFF_BRAND",
-  "VIOLENCE",
+  "EXTREME_HARM",
   "NONE",
 ] as const;
 

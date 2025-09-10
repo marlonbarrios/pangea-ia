@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Function to clean DuckDuckGo redirect URLs
+function cleanDuckDuckGoUrl(url: string): string {
+  if (!url) return '';
+  
+  // Handle DuckDuckGo redirect URLs
+  if (url.includes('duckduckgo.com/l/?uddg=')) {
+    try {
+      const match = url.match(/uddg=([^&]+)/);
+      if (match) {
+        return decodeURIComponent(match[1]);
+      }
+    } catch (e) {
+      console.log('[cleanDuckDuckGoUrl] Error decoding URL:', e);
+    }
+  }
+  
+  // If it starts with //, add https:
+  if (url.startsWith('//')) {
+    return 'https:' + url;
+  }
+  
+  return url;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { query, explanation } = await request.json();
@@ -37,7 +61,7 @@ export async function POST(request: NextRequest) {
         definition: data.Definition || null,
         related_topics: data.RelatedTopics?.slice(0, 3)?.map((topic: any) => ({
           text: topic.Text,
-          url: topic.FirstURL
+          url: cleanDuckDuckGoUrl(topic.FirstURL)
         })) || [],
         infobox: data.Infobox ? {
           content: data.Infobox.content?.slice(0, 3)?.map((item: any) => ({
@@ -47,7 +71,7 @@ export async function POST(request: NextRequest) {
         } : null,
         external_links: data.Results?.slice(0, 3)?.map((result: any) => ({
           title: result.Text,
-          url: result.FirstURL
+          url: cleanDuckDuckGoUrl(result.FirstURL)
         })) || []
       };
 
@@ -76,7 +100,7 @@ export async function POST(request: NextRequest) {
                 const titleMatch = match.match(/>([^<]*)</);
                 return {
                   title: titleMatch ? titleMatch[1].trim() : 'Search Result',
-                  url: urlMatch ? urlMatch[1] : '#'
+                  url: urlMatch ? cleanDuckDuckGoUrl(urlMatch[1]) : '#'
                 };
               });
             }

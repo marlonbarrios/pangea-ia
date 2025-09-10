@@ -3,8 +3,11 @@ import "./globals.css";
 import "./lib/envSetup";
 
 export const metadata: Metadata = {
-  title: "Realtime API Agents",
-  description: "A demo app from OpenAI.",
+  title: "Pangea_IA",
+  description: "Plataforma de IA Decolonial - Decolonizing the Digital",
+  icons: {
+    icon: "/pangea-icon.svg",
+  },
 };
 
 export default function RootLayout({

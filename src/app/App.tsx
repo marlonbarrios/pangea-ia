@@ -601,6 +601,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       portfolio: "Portafolio",
       poweredBy: "Impulsado por",
       lastUpdated: "Última actualización",
+      artProjectDisclaimer: "Proyecto artístico de IA decolonial. Contenido de simulación para exploración educativa.",
       uploadImage: "Subir imagen",
       analyzing: "Analizando imagen...",
       analysisGeneral: "Análisis General",
@@ -646,6 +647,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       portfolio: "Portfolio", 
       poweredBy: "Powered by",
       lastUpdated: "Last updated",
+      artProjectDisclaimer: "Decolonial AI art project. Simulation content for educational exploration.",
       uploadImage: "Upload image",
       analyzing: "Analyzing image...",
       analysisGeneral: "General Analysis",
@@ -690,7 +692,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "Développement par",
       portfolio: "Portfolio",
       poweredBy: "Alimenté par",
-      lastUpdated: "Dernière mise à jour"
+      lastUpdated: "Dernière mise à jour",
+      artProjectDisclaimer: "Projet artistique d'IA décoloniale. Contenu de simulation pour exploration éducative."
     },
     deutsch: {
       scenario: "Szenario",
@@ -716,7 +719,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "Entwicklung von",
       portfolio: "Portfolio",
       poweredBy: "Powered by",
-      lastUpdated: "Zuletzt aktualisiert"
+      lastUpdated: "Zuletzt aktualisiert",
+      artProjectDisclaimer: "Dekoloniales KI-Kunstprojekt. Simulationsinhalt für Bildungserkundung."
     },
     "english-german": {
       scenario: "Scenario / Szenario",
@@ -743,6 +747,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       portfolio: "Portfolio / Portfolio",
       poweredBy: "Powered by / Unterstützt von",
       lastUpdated: "Last updated / Zuletzt aktualisiert",
+      artProjectDisclaimer: "Decolonial AI art project. Simulation content for educational exploration. / Dekoloniales KI-Kunstprojekt. Simulationsinhalt für Bildungserkundung.",
       uploadImage: "Upload image / Bild hochladen",
       analyzing: "Analyzing image... / Bild analysieren...",
       analysisGeneral: "General Analysis / Allgemeine Analyse",
@@ -787,7 +792,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "Desenvolvimento por",
       portfolio: "Portfólio",
       poweredBy: "Powered by",
-      lastUpdated: "Última atualização"
+      lastUpdated: "Última atualização",
+      artProjectDisclaimer: "Projeto artístico de IA decolonial. Conteúdo de simulação para exploração educacional."
     },
     italiano: {
       scenario: "Scenario",
@@ -813,7 +819,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "Sviluppo di",
       portfolio: "Portfolio",
       poweredBy: "Powered by",
-      lastUpdated: "Ultimo aggiornamento"
+      lastUpdated: "Ultimo aggiornamento",
+      artProjectDisclaimer: "Progetto artistico di IA decoloniale. Contenuto di simulazione per esplorazione educativa."
     },
     "中文": {
       scenario: "场景",
@@ -839,7 +846,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "开发者",
       portfolio: "作品集",
       poweredBy: "技术支持",
-      lastUpdated: "最后更新"
+      lastUpdated: "最后更新",
+      artProjectDisclaimer: "去殖民化AI艺术项目。教育探索模拟内容。"
     },
     "日本語": {
       scenario: "シナリオ",
@@ -865,7 +873,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "開発者",
       portfolio: "ポートフォリオ",
       poweredBy: "技術提供",
-      lastUpdated: "最終更新"
+      lastUpdated: "最終更新",
+      artProjectDisclaimer: "脱植民地化AI芸術プロジェクト。教育的探求のためのシミュレーション内容。"
     },
     "العربية": {
       scenario: "السيناريو",
@@ -891,7 +900,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "تطوير بواسطة",
       portfolio: "الحافظة",
       poweredBy: "مدعوم من",
-      lastUpdated: "آخر تحديث"
+      lastUpdated: "آخر تحديث",
+      artProjectDisclaimer: "مشروع فني للذكاء الاصطناعي اللااستعماري. محتوى محاكاة للاستكشاف التعليمي."
     },
     "हिन्दी": {
       scenario: "परिदृश्य",
@@ -917,7 +927,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "विकास",
       portfolio: "पोर्टफोलियो",
       poweredBy: "द्वारा संचालित",
-      lastUpdated: "अंतिम अपडेट"
+      lastUpdated: "अंतिम अपडेट",
+      artProjectDisclaimer: "उपनिवेशवाद-विरोधी AI कला परियोजना। शिक्षा अन्वेषण के लिए सिमुलेशन सामग्री।"
     },
     "русский": {
       scenario: "Сценарий",
@@ -943,7 +954,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       development: "Разработка",
       portfolio: "Портфолио",
       poweredBy: "При поддержке",
-      lastUpdated: "Последнее обновление"
+      lastUpdated: "Последнее обновление",
+      artProjectDisclaimer: "Деколониальный ИИ художественный проект. Симуляционный контент для образовательного исследования."
     }
   };
 
@@ -1105,6 +1117,13 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       />
 
       {/* Footer */}
+      {/* Art Project Disclaimer */}
+      <div className="bg-yellow-50 border-t border-yellow-200 px-4 py-2 text-xs text-center">
+        <div className="text-yellow-800 font-medium">
+          {t.artProjectDisclaimer}
+        </div>
+      </div>
+      
       <footer className="bg-gray-50 border-t border-gray-200 px-4 py-2 text-xs text-gray-600 text-center">
         <div className="flex flex-col space-y-1">
           <div className="font-semibold text-gray-700">
@@ -1115,8 +1134,6 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
           </div>
           <div className="flex justify-center items-center space-x-4 flex-wrap">
             <span>{t.development} <a href="https://marlonbarrios.github.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Marlon Barrios Solano</a></span>
-            <span>•</span>
-            <span>{t.poweredBy} OpenAI GPT-4o</span>
             <span>•</span>
             <span>{t.lastUpdated}: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>

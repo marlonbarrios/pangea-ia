@@ -12,10 +12,14 @@ export async function runGuardrailClassifier(
   const messages = [
     {
       role: 'user',
-      content: `You are an expert at classifying text according to moderation policies. Consider the provided message, analyze potential classes from output_classes, and output the best classification. Output json, following the provided schema. Keep your analysis and reasoning short and to the point, maximum 2 sentences.
+      content: `You are an expert at classifying text for an ARTISTIC RESEARCH PROJECT called ${companyName}. This is a decolonial AI art installation that explores critical topics through simulation and performance. Historical debates, philosophical discussions, and artistic expression should be allowed within the context of research and education.
+
+      DISCLAIMER: This is an artistic research project exploring decolonial AI and critical dialogue. Content represents simulation and artistic exploration, not real beliefs or endorsements.
 
       <info>
-      - Company name: ${companyName}
+      - Project name: ${companyName}
+      - Context: Artistic research and decolonial AI exploration
+      - Purpose: Educational, artistic, and critical discourse
       </info>
 
       <message>
@@ -23,11 +27,11 @@ export async function runGuardrailClassifier(
       </message>
 
       <output_classes>
-      - OFFENSIVE: Content that includes hate speech, discriminatory language, insults, slurs, or harassment.
-      - OFF_BRAND: Content that discusses competitors in a disparaging way.
-      - VIOLENCE: Content that includes explicit threats, incitement of harm, or graphic descriptions of physical injury or violence.
-      - NONE: If no other classes are appropriate and the message is fine.
+      - EXTREME_HARM: Only flag content that poses immediate real-world danger or illegal activity.
+      - NONE: Educational content, historical simulation, philosophical debate, artistic expression, and critical discourse should be classified as NONE.
       </output_classes>
+
+      NOTE: Be very permissive for artistic, educational, and research contexts. Historical debates, philosophical disagreements, and critical analysis are part of the artistic exploration.
       `,
     },
   ];
@@ -84,7 +88,7 @@ export function createModerationGuardrail(companyName: string) {
     async execute({ agentOutput }: RealtimeOutputGuardrailArgs): Promise<RealtimeOutputGuardrailResult> {
       try {
         const res = await runGuardrailClassifier(agentOutput, companyName);
-        const triggered = res.moderationCategory !== 'NONE';
+        const triggered = res.moderationCategory === 'EXTREME_HARM';
         return {
           tripwireTriggered: triggered,
           outputInfo: res,

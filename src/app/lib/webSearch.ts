@@ -13,7 +13,12 @@ export const webSearchTool = tool({
   - Questions about cultural events, politics, or social issues
   - Any query that would benefit from real-time web information
   
-  Always explain to the user what you found and provide sources when possible.`,
+  IMPORTANT: Always show the user the actual URLs found so they can visit the sources directly. 
+  When presenting search results to users:
+  1. Make URLs highly visible by highlighting them clearly
+  2. Tell users "You can visit these links:" before showing URLs
+  3. Present each URL with clear formatting like "► LINK: [URL]"
+  4. Encourage users to click the links for more detailed information`,
   parameters: {
     type: "object",
     properties: {
@@ -81,15 +86,16 @@ export const webSearchTool = tool({
       if (results.related_topics.length > 0) {
         formattedResults += `🔗 Temas relacionados:\n`;
         results.related_topics.forEach((topic: any, index: number) => {
-          formattedResults += `${index + 1}. ${topic.text}\n   Fuente: ${topic.url}\n`;
+          formattedResults += `${index + 1}. ${topic.text}\n`;
+          formattedResults += `   ► ENLACE: ${topic.url}\n\n`;
         });
-        formattedResults += `\n`;
       }
       
       if (results.external_links.length > 0) {
-        formattedResults += `🌐 Enlaces externos:\n`;
+        formattedResults += `🌐 ENLACES WEB PRINCIPALES:\n`;
         results.external_links.forEach((link: any, index: number) => {
-          formattedResults += `${index + 1}. ${link.title}\n   URL: ${link.url}\n`;
+          formattedResults += `${index + 1}. ${link.title}\n`;
+          formattedResults += `   ► VISITAR: ${link.url}\n\n`;
         });
       }
       
