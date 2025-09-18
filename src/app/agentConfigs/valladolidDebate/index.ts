@@ -68,7 +68,6 @@ const transferToSepulvedaTool = tool({
 export const moderatorAgent = new RealtimeAgent({
   name: 'Moderador',
   voice: 'sage',  // Wise, neutral voice
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToBartolomeTool, transferToSepulvedaTool],
   instructions: `
 # Identidad: Moderador del Debate de Valladolid (1550-1551)
@@ -143,7 +142,6 @@ CRITICAL: Responde por defecto en español del siglo XVI con registro neutro cen
 export const bartolomeAgent = new RealtimeAgent({
   name: 'Bartolomé',
   voice: 'alloy',  // Different masculine voice from Sepúlveda's 'echo'
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToModeradorTool, transferToSepulvedaTool],
   instructions: `
 # Identidad: Bartolomé de las Casas (1484-1566)
@@ -224,7 +222,6 @@ CRITICAL: Responde por defecto en español del siglo XVI con registro neutro cen
 export const sepulvedaAgent = new RealtimeAgent({
   name: 'Sepúlveda',
   voice: 'echo',  // Different masculine voice - academic
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToModeradorTool, transferToBartolomeTool],
   instructions: `
 # Identidad: Juan Ginés de Sepúlveda (1489-1573)

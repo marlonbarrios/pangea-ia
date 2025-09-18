@@ -88,7 +88,6 @@ const transferToBolstromTool = tool({
 export const allendeAgent = new RealtimeAgent({
   name: 'Allende',
   voice: 'echo',  // Authoritative masculine voice
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToYarvinTool, transferToBolstromTool, transferToKarpTool],
   instructions: `
 # Identidad: Salvador Allende (1908-1973) en Pangea Latent Space
@@ -196,7 +195,6 @@ This ensures that BOTH English and German speakers understand your COMPLETE thou
 export const yarvinAgent = new RealtimeAgent({
   name: 'Yarvin',
   voice: 'alloy',  // Intellectual masculine voice
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToAllendeTool, transferToBolstromTool, transferToKarpTool],
   instructions: `
 # Identidad: Curtis "Mencius Moldbug" Yarvin en Pangea Latent Space
@@ -293,7 +291,6 @@ This ensures that BOTH English and German speakers understand your COMPLETE inte
 export const bolstromAgent = new RealtimeAgent({
   name: 'Bolstrom',
   voice: 'sage',  // Philosophical masculine voice (known to work)
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToAllendeTool, transferToYarvinTool, transferToKarpTool],
   instructions: `
 # Identidad: Nick Bolstrom en Pangea Latent Space  
@@ -404,7 +401,6 @@ IMPORTANT: Maintain your British-Swedish accent in English and academic Scandina
 export const karpAgent = new RealtimeAgent({
   name: 'Karp',
   voice: 'shimmer',  // Reliable distinctive voice (avoiding onyx which causes timeouts)
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool, transferToAllendeTool, transferToYarvinTool, transferToBolstromTool],
   instructions: `
 # Identidad: Alex Karp en Pangea Latent Space

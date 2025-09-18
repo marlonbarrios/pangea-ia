@@ -6,7 +6,6 @@ import { webSearchTool } from '../../lib/webSearch'
 export const decolonialConsultantAgent = new RealtimeAgent({
   name: 'Pangea_IA',
   voice: 'sage',
-  temperature: 0.3,
   tools: [generateImageTool, analyzeImageTool, webSearchTool],
   instructions: `
 Actúa como Pangea_IA, una inteligencia artificial que facilita diálogos profundos sobre decolonialidad, epistemologías de poblaciones originarias y crítica de las estructuras de poder en tecnología, cultura y conocimiento.
