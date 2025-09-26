@@ -366,7 +366,8 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
                       selectedLanguage === 'français' ? 'salut' :
                       selectedLanguage === 'deutsch' ? 'hallo' :
                       selectedLanguage === 'português' ? 'olá' :
-                      selectedLanguage === 'italiano' ? 'ciao' : 'hi';
+                      selectedLanguage === 'italiano' ? 'ciao' :
+                      selectedLanguage === 'türkçe' ? 'merhaba' : 'hi';
       sendSimulatedUserMessage(greeting);
     }
     return;
@@ -956,6 +957,52 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       poweredBy: "При поддержке",
       lastUpdated: "Последнее обновление",
       artProjectDisclaimer: "Деколониальный ИИ художественный проект. Симуляционный контент для образовательного исследования."
+    },
+    "türkçe": {
+      scenario: "Senaryo",
+      agent: "Ajan",
+      language: "Dil",
+      connect: "Bağlan",
+      disconnect: "Bağlantıyı Kes",
+      connecting: "Bağlanıyor...",
+      connected: "Bağlandı",
+      disconnected: "Bağlantı Kesildi",
+      logs: "Günlükler",
+      sendMessage: "Mesaj gönder",
+      typeMessage: "Mesajınızı yazın...",
+      pushToTalk: "Konuşmak için basın",
+      talk: "Konuş (Boşluk)",
+      audioPlayback: "Ses çalma",
+      codec: "Kodek:",
+      decolonialPlatform: "Dekolonyal AI Araştırma Platformu",
+      decolonizingDigital: "Dijitali Dekolonize Etmek",
+      beyondGravity: "Beyond Gravity Festivali",
+      exploring: "Yapay zeka için dekolonyal yaklaşımları keşfetmek",
+      globalSouth: "Küresel Güney Perspektifleri • Yerli Epistemolojiler",
+      development: "Geliştiren",
+      portfolio: "Portföy",
+      poweredBy: "Destekleyen",
+      lastUpdated: "Son güncelleme",
+      artProjectDisclaimer: "Dekolonyal AI sanat projesi. Eğitim keşfi için simülasyon içeriği.",
+      uploadImage: "Görsel yükle",
+      analyzing: "Görsel analiz ediliyor...",
+      analysisGeneral: "Genel Analiz",
+      analysisDecolonial: "Dekolonyal Perspektif",
+      analysisArtistic: "Sanatsal Analiz",
+      analysisTechnical: "Teknik Analiz",
+      analysisCultural: "Kültürel Perspektif",
+      analysisCustom: "Özel Prompt",
+      customPromptPlaceholder: "Analiz için özel prompt yazın...",
+      dropOrClick: "Bir görsel buraya sürükleyin veya seçmek için tıklayın",
+      supportedFormats: "Formatlar: JPG, PNG, GIF, WebP (maks. 10MB)",
+      errorInvalidImage: "Lütfen geçerli bir görsel dosyası seçin",
+      errorImageTooLarge: "Görsel çok büyük. Maksimum 10MB",
+      errorAnalyzing: "Görsel analiz edilirken hata oluştu. Tekrar deneyin.",
+      analysisType: "Analiz türü",
+      selectImage: "Görsel seç",
+      downloadImage: "Görseli indir",
+      viewFullImage: "Tam görsel görüntüle",
+      downloadingImage: "Görsel indiriliyor..."
     }
   };
 
@@ -1059,6 +1106,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
                 <option value="deutsch">Deutsch</option>
                 <option value="português">Português</option>
                 <option value="italiano">Italiano</option>
+                <option value="türkçe">Türkçe</option>
                 <option value="中文">中文</option>
                 <option value="日本語">日本語</option>
                 <option value="العربية">العربية</option>
