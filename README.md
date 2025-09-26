@@ -12,9 +12,27 @@ Through real-time voice conversations with specialized AI agents, users can expl
 
 This is not just another AI chatbot—it's an artistic research platform that treats artificial intelligence as a medium for critical inquiry, a space for collective memory, and a tool for imagining worlds where technology serves liberation rather than domination. Built with support for thirteen languages and designed for voices that have been systematically excluded from tech development, Pangea_IA represents a radical experiment in making AI more just, more inclusive, and more human.
 
-## Overview
+## The Project
 
-Pangea_IA is an artistic research platform developed by **Marlon Barrios Solano** and **María Luisa Angulo** that treats the ancient supercontinent Pangea as an epistemic metaphor: a world in motion, where borders are provisional and knowledge travels. The platform prototypes decolonial strategies for AI and explores how artificial intelligence can serve justice, diversity, and pluriversal thinking.
+Pangea_IA emerges as a groundbreaking artistic research project that challenges the fundamental assumptions of how artificial intelligence is conceived, developed, and deployed. Created by interdisciplinary artists and researchers **Marlon Barrios Solano** and **María Luisa Angulo**, this initiative represents a multi-year investigation into the possibilities of decolonial AI—intelligence systems that actively resist colonial patterns of knowledge extraction and hierarchical thinking.
+
+### Project Genesis and Vision
+
+Born from the intersection of critical theory, artistic practice, and technological innovation, Pangea_IA treats the ancient supercontinent as both historical metaphor and speculative framework. Just as Pangea existed before continental drift created the geographical divisions we know today, this project imagines artificial intelligence before the epistemological divisions imposed by colonial thinking—before certain knowledge systems were deemed "primitive" while others were elevated as "advanced."
+
+The project operates as a living laboratory where theoretical concepts become experiential realities. Through voice-based conversations with AI agents trained on decolonial frameworks, users don't just read about concepts like "colonialidad del ser" or "antropofagia zombi"—they engage with these ideas in real-time dialogue, making abstract theory accessible and personally meaningful.
+
+### Research Methodology
+
+Pangea_IA employs what the creators call "artes del conocimiento" (arts of knowledge)—artistic practices that transform research into living creative matter. This methodology refuses the colonial separation between "art" and "science," "creation" and "knowledge production." Instead, thinking, researching, and imagining become part of the same creative process, where artistic creation finds legitimacy as situated knowledge and epistemic resistance.
+
+The project's technical infrastructure serves this philosophical framework. Rather than building yet another AI application optimized for efficiency or profit, Pangea_IA prioritizes dialogue, reflection, and the amplification of marginalized voices. The platform's multilingual support isn't just a feature—it's a political statement about whose languages matter in the development of intelligent systems.
+
+### Collaborative and Residency-Based Development
+
+Currently in active development during a collective residency at Theater Im Depot in Dortmund, Germany, as part of the Beyond Gravity Festival, Pangea_IA exemplifies collaborative artistic research. The project brings together international artists including Lenara Verle (Brazil/Germany), Oliver Walton (Australia/UK), Marcel Gbeffa (Benin/France), and Vera Rivas (Mexico), creating a truly transnational dialogue about the future of AI.
+
+This residency model reflects the project's core belief that meaningful AI development requires diverse perspectives working in sustained collaboration, rather than the isolated genius model that dominates Silicon Valley. The resulting platform bears the marks of multiple cultural frameworks, languages, and ways of understanding intelligence itself.
 
 ## Features
 
