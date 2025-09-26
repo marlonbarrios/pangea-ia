@@ -2,11 +2,10 @@
 
 **Plataforma de IA Decolonial - Decolonizing the Digital**
 
+🌐 **[Try Pangea_IA Live](https://pangea-ia-bj2o2.vercel.app/?agentConfig=Pangea_IA)** 
+
 ![Pangea_IA Interface](public/image01.png)
 
-Imagine a world where artificial intelligence breaks free from its colonial constraints—where algorithms learn not just from Silicon Valley datasets, but from the vast wisdom of Indigenous communities, the resistance songs of the Global South, and the speculative dreams of decolonial futures. This is Pangea_IA, a living laboratory where technology meets social justice, where code becomes poetry, and where AI agents engage in profound conversations about power, memory, and possibility.
-
-Named after the ancient supercontinent that once united all lands before they drifted apart, Pangea_IA serves as both metaphor and methodology for reimagining how we build and interact with intelligent systems. Just as Pangea represented a time before artificial borders divided the Earth, this platform envisions AI before colonial hierarchies determine whose knowledge counts and whose voices are heard.
 
 Through real-time voice conversations with specialized AI agents, users can explore critical questions about technology, colonialism, and resistance. Whether analyzing images through a decolonial lens, debating the future of democracy with historical figures in latent space, or measuring the "temperature" of colonial influence in contemporary scenarios, Pangea_IA transforms abstract concepts into lived, conversational experiences.
 
