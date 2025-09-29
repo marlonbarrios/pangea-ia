@@ -192,7 +192,7 @@ function App() {
     if (sessionStatus === "CONNECTED") {
       updateSession();
     }
-  }, [isPTTActive]);
+  }, [isPTTActive, sessionStatus]); // Added sessionStatus to trigger VAD setup on connect
 
   const fetchEphemeralKey = async (): Promise<string | null> => {
     logClientEvent({ url: "/session" }, "fetch_session_token_request");
@@ -339,6 +339,7 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
   };
 
   const updateSession = (shouldTriggerResponse: boolean = false) => {
+    console.log('[updateSession] Called with isPTTActive:', isPTTActive);
     // Reflect Push-to-Talk UI state by (de)activating server VAD on the
     // backend. The Realtime SDK supports live session updates via the
     // `session.update` event.
@@ -346,18 +347,20 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
       ? null
       : {
           type: 'server_vad',
-          threshold: 0.9,
+          threshold: 0.5,  // Lower threshold = more sensitive
           prefix_padding_ms: 300,
-          silence_duration_ms: 500,
+          silence_duration_ms: 200,  // Shorter silence = faster response
           create_response: true,
         };
 
+    console.log('[updateSession] Setting turnDetection:', turnDetection);
     sendEvent({
       type: 'session.update',
       session: {
         turn_detection: turnDetection,
       },
     });
+    console.log('[updateSession] VAD configuration sent');
 
     // Send an initial greeting message to trigger the agent to greet the user in selected language
     if (shouldTriggerResponse) {
