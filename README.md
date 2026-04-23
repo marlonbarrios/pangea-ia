@@ -1,8 +1,8 @@
-# Pangea_IA
+# Decolonial AI
 
-**Plataforma de IA Decolonial - Decolonizing the Digital**
+** Decolonizing the Digital**
 
-🌐 **[Try Pangea_IA Live](https://pangea-ia-bj2o2.vercel.app/?agentConfig=Pangea_IA)** 
+🌐 **[Live App](https://pangea-ia-bj2o2.vercel.app/?agentConfig=Pangea_IA)** 
 
 ![Pangea_IA Interface](public/image01.png)
 
