@@ -1,7 +1,19 @@
 const webpack = require("webpack");
 
+/** Frozen when Next loads this file (each `next build` / dev server start = new stamp). */
+const APP_BUILD_TIME_ISO = new Date().toISOString();
+const APP_GIT_SHA_SHORT =
+  process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ||
+  process.env.GITHUB_SHA?.slice(0, 7) ||
+  "";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /** Server / tooling; client bundle also gets these via DefinePlugin below. */
+  env: {
+    NEXT_PUBLIC_APP_BUILD_TIME_ISO: APP_BUILD_TIME_ISO,
+    NEXT_PUBLIC_APP_GIT_SHA: APP_GIT_SHA_SHORT,
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -30,7 +42,12 @@ const nextConfig = {
       config.plugins.push(
         new webpack.DefinePlugin({
           global: "globalThis",
-          "process.env": JSON.stringify(process.env),
+          // Merge deploy stamp into client env (DefinePlugin replaced whole process.env).
+          "process.env": JSON.stringify({
+            ...process.env,
+            NEXT_PUBLIC_APP_BUILD_TIME_ISO: APP_BUILD_TIME_ISO,
+            NEXT_PUBLIC_APP_GIT_SHA: APP_GIT_SHA_SHORT,
+          }),
           "process.version": JSON.stringify(process.version),
           "process.platform": JSON.stringify("browser"),
           "process.nextTick": "setTimeout",

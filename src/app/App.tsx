@@ -1032,6 +1032,37 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
 
   const t = translations[selectedLanguage as keyof typeof translations] || translations.español;
 
+  const buildLocaleMap: Record<string, string> = {
+    español: "es",
+    english: "en-US",
+    français: "fr-FR",
+    deutsch: "de-DE",
+    "english-german": "en-US",
+    português: "pt-BR",
+    italiano: "it-IT",
+    中文: "zh-CN",
+    日本語: "ja-JP",
+    العربية: "ar",
+    हिन्दी: "hi-IN",
+    русский: "ru-RU",
+    türkçe: "tr-TR",
+  };
+  const buildLocale = buildLocaleMap[selectedLanguage] ?? "en-US";
+  const buildIso = process.env.NEXT_PUBLIC_APP_BUILD_TIME_ISO;
+  const gitShaShort = process.env.NEXT_PUBLIC_APP_GIT_SHA;
+  let deployDisplay = "—";
+  let deployUtcTitle = "";
+  if (buildIso) {
+    const d = new Date(buildIso);
+    if (!Number.isNaN(d.getTime())) {
+      deployDisplay = d.toLocaleString(buildLocale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+      deployUtcTitle = `${d.toISOString().replace("T", " ").slice(0, 19)} UTC`;
+    }
+  }
+
   // Show loading until hydration is complete to prevent hydration mismatch
   if (!isHydrated) {
     return (
@@ -1207,7 +1238,10 @@ Por favor, responde con tus propios insights adicionales desde tu perspectiva co
           <div className="flex justify-center items-center space-x-4 flex-wrap">
             <span>{t.development} <a href="https://marlonbarrios.github.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Marlon Barrios Solano</a></span>
             <span>•</span>
-            <span>{t.lastUpdated}: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            <span title={deployUtcTitle || undefined}>
+              {t.lastUpdated}: {deployDisplay}
+              {gitShaShort ? ` · ${gitShaShort}` : ""}
+            </span>
           </div>
         </div>
       </footer>

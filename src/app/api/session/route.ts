@@ -14,8 +14,11 @@ function openaiHeaders(apiKey: string): Record<string, string> {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
   };
-  const org = process.env.OPENAI_ORG_ID?.trim();
-  const project = process.env.OPENAI_PROJECT_ID?.trim();
+  const org =
+    process.env.OPENAI_ORG_ID?.trim() ||
+    process.env.OPENAI_ORGANIZATION?.trim();
+  const project =
+    process.env.OPENAI_PROJECT_ID?.trim() || process.env.OPENAI_PROJECT?.trim();
   if (org) headers["OpenAI-Organization"] = org;
   if (project) headers["OpenAI-Project"] = project;
   return headers;
@@ -51,6 +54,22 @@ function extractEkFromSessionPayload(data: unknown): string | undefined {
   const d = data as { client_secret?: { value?: string } };
   const v = d.client_secret?.value;
   return v?.startsWith("ek_") ? v : undefined;
+}
+
+/** Safe booleans for debugging Vercel vs local (no secrets). */
+function openaiEnvChecklist() {
+  const orgSet = !!(
+    process.env.OPENAI_ORG_ID?.trim() || process.env.OPENAI_ORGANIZATION?.trim()
+  );
+  const projectSet = !!(
+    process.env.OPENAI_PROJECT_ID?.trim() || process.env.OPENAI_PROJECT?.trim()
+  );
+  return {
+    has_openai_organization: orgSet,
+    has_openai_project: projectSet,
+    openai_base_url_set: !!process.env.OPENAI_BASE_URL?.trim(),
+    realtime_model: OPENAI_REALTIME_MODEL,
+  };
 }
 
 type MintOk = { ok: true; value: string; expires_at?: number; session: unknown };
@@ -105,7 +124,18 @@ async function mintEphemeralSession(apiKey: string): Promise<MintOk | MintErr> {
     };
   };
 
-  // 1) POST /v1/realtime/client_secrets (primary GA path in docs)
+  // 1) POST /v1/realtime/sessions — often works when client_secrets is routed to beta.
+  {
+    const res = await fetch(`${base}/realtime/sessions`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ model: OPENAI_REALTIME_MODEL }),
+    });
+    const parsed = await tryParse(res, extractEkFromSessionPayload, (d) => d);
+    if (parsed) return parsed;
+  }
+
+  // 2) POST /v1/realtime/client_secrets
   {
     const res = await fetch(`${base}/realtime/client_secrets`, {
       method: "POST",
@@ -121,17 +151,6 @@ async function mintEphemeralSession(apiKey: string): Promise<MintOk | MintErr> {
     const parsed = await tryParse(res, extractEkFromClientSecretsPayload, (data) =>
       data && typeof data === "object" && "session" in data ? (data as { session: unknown }).session : data
     );
-    if (parsed) return parsed;
-  }
-
-  // 2) POST /v1/realtime/sessions — model only (no modalities array; avoids invalid pairs)
-  {
-    const res = await fetch(`${base}/realtime/sessions`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ model: OPENAI_REALTIME_MODEL }),
-    });
-    const parsed = await tryParse(res, extractEkFromSessionPayload, (d) => d);
     if (parsed) return parsed;
   }
 
@@ -154,12 +173,16 @@ export async function GET() {
 
     const result = await mintEphemeralSession(apiKey);
     if (!result.ok) {
+      const checklist = openaiEnvChecklist();
       const betaHint =
         result.message.includes("Beta API") || result.message.toLowerCase().includes("beta")
-          ? " For project-scoped keys add OPENAI_PROJECT_ID (+ OPENAI_ORG_ID) to .env.local. For EU endpoints set OPENAI_BASE_URL=https://eu.api.openai.com/v1"
+          ? " Add the same OPENAI_ORG_ID + OPENAI_PROJECT_ID (or OPENAI_ORGANIZATION + OPENAI_PROJECT) you use in .env.local to Vercel → Settings → Environment Variables (Production), then redeploy. If you use EU data residency, set OPENAI_BASE_URL=https://eu.api.openai.com/v1 there too."
           : "";
       return NextResponse.json(
-        { error: `OpenAI API error: ${result.status} — ${result.message}${betaHint}` },
+        {
+          error: `OpenAI API error: ${result.status} — ${result.message}${betaHint}`,
+          env_hint: checklist,
+        },
         { status: result.status }
       );
     }
