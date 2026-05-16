@@ -3,11 +3,141 @@ import { NextResponse } from "next/server";
 import { OPENAI_REALTIME_MODEL } from "@/app/lib/realtimeModel";
 import { getOpenAIApiKey } from "@/app/lib/openaiEnv";
 
+function openaiApiBase(): string {
+  const raw = process.env.OPENAI_BASE_URL?.trim();
+  if (!raw) return "https://api.openai.com/v1";
+  return raw.replace(/\/$/, "");
+}
+
+function openaiHeaders(apiKey: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+  const org = process.env.OPENAI_ORG_ID?.trim();
+  const project = process.env.OPENAI_PROJECT_ID?.trim();
+  if (org) headers["OpenAI-Organization"] = org;
+  if (project) headers["OpenAI-Project"] = project;
+  return headers;
+}
+
+async function readOpenAIErrorMessage(res: Response): Promise<string> {
+  try {
+    const err = (await res.json()) as { error?: { message?: string } | string };
+    if (typeof err.error === "object" && err.error?.message) return err.error.message;
+    if (typeof err.error === "string") return err.error;
+    return JSON.stringify(err);
+  } catch {
+    const text = await res.text();
+    return text?.slice(0, 500) || "Unknown error";
+  }
+}
+
+function extractEkFromClientSecretsPayload(data: unknown): string | undefined {
+  if (!data || typeof data !== "object") return undefined;
+  const d = data as Record<string, unknown>;
+  if (typeof d.value === "string" && d.value.startsWith("ek_")) return d.value;
+  const cs = d.client_secret;
+  if (typeof cs === "string" && cs.startsWith("ek_")) return cs;
+  if (cs && typeof cs === "object" && "value" in cs && typeof (cs as { value: unknown }).value === "string") {
+    const v = (cs as { value: string }).value;
+    if (v.startsWith("ek_")) return v;
+  }
+  return undefined;
+}
+
+function extractEkFromSessionPayload(data: unknown): string | undefined {
+  if (!data || typeof data !== "object") return undefined;
+  const d = data as { client_secret?: { value?: string } };
+  const v = d.client_secret?.value;
+  return v?.startsWith("ek_") ? v : undefined;
+}
+
+type MintOk = { ok: true; value: string; expires_at?: number; session: unknown };
+type MintErr = { ok: false; status: number; message: string };
+
 /**
- * GA Realtime mints ephemeral keys via `POST /v1/realtime/sessions` (response includes
- * `client_secret.value`). As of 2026, `POST /v1/realtime/client_secrets` can return
- * 400 "Realtime Beta API is no longer supported" for the same API key.
+ * Try GA mint paths in order. Uses OPENAI_BASE_URL when set (e.g. EU:
+ * https://eu.api.openai.com/v1).
  */
+async function mintEphemeralSession(apiKey: string): Promise<MintOk | MintErr> {
+  const base = openaiApiBase();
+  const headers = openaiHeaders(apiKey);
+
+  let lastStatus = 502;
+  let lastMessage = "Could not mint an ephemeral Realtime key.";
+
+  const tryParse = async (
+    res: Response,
+    extract: (data: unknown) => string | undefined,
+    sessionWrapper: (data: unknown) => unknown
+  ): Promise<MintOk | null> => {
+    if (!res.ok) {
+      lastStatus = res.status;
+      lastMessage = await readOpenAIErrorMessage(res);
+      return null;
+    }
+    let data: unknown;
+    try {
+      data = await res.json();
+    } catch {
+      lastStatus = 502;
+      lastMessage = "OpenAI returned a non-JSON success body.";
+      return null;
+    }
+    const value = extract(data);
+    if (!value) {
+      lastStatus = 502;
+      lastMessage = "OpenAI response did not include an ek_ client secret.";
+      return null;
+    }
+    const exp =
+      data && typeof data === "object" && "expires_at" in data && typeof (data as { expires_at: unknown }).expires_at === "number"
+        ? (data as { expires_at: number }).expires_at
+        : data && typeof data === "object" && "client_secret" in data && (data as { client_secret?: { expires_at?: number } }).client_secret
+          ? (data as { client_secret?: { expires_at?: number } }).client_secret?.expires_at
+          : undefined;
+    return {
+      ok: true,
+      value,
+      expires_at: exp,
+      session: sessionWrapper(data),
+    };
+  };
+
+  // 1) POST /v1/realtime/client_secrets (primary GA path in docs)
+  {
+    const res = await fetch(`${base}/realtime/client_secrets`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        expires_after: { anchor: "created_at", seconds: 600 },
+        session: {
+          type: "realtime",
+          model: OPENAI_REALTIME_MODEL,
+        },
+      }),
+    });
+    const parsed = await tryParse(res, extractEkFromClientSecretsPayload, (data) =>
+      data && typeof data === "object" && "session" in data ? (data as { session: unknown }).session : data
+    );
+    if (parsed) return parsed;
+  }
+
+  // 2) POST /v1/realtime/sessions — model only (no modalities array; avoids invalid pairs)
+  {
+    const res = await fetch(`${base}/realtime/sessions`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ model: OPENAI_REALTIME_MODEL }),
+    });
+    const parsed = await tryParse(res, extractEkFromSessionPayload, (d) => d);
+    if (parsed) return parsed;
+  }
+
+  return { ok: false, status: lastStatus, message: lastMessage };
+}
+
 export async function GET() {
   try {
     const apiKey = getOpenAIApiKey();
@@ -16,83 +146,31 @@ export async function GET() {
       return NextResponse.json(
         {
           error:
-            "OPENAI_API_KEY is not set. Add it in Vercel (or `.env.local` locally), then redeploy / restart.",
+            "OPENAI_API_KEY is not set. Add it in `.env.local` (local) or Vercel env, then restart.",
         },
         { status: 500 }
       );
     }
 
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    };
-    const org = process.env.OPENAI_ORG_ID?.trim();
-    const project = process.env.OPENAI_PROJECT_ID?.trim();
-    if (org) headers["OpenAI-Organization"] = org;
-    if (project) headers["OpenAI-Project"] = project;
-
-    const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model: OPENAI_REALTIME_MODEL,
-        modalities: ["audio", "text"],
-      }),
-    });
-
-    if (!response.ok) {
-      let errorMessage = "Unknown error";
-      try {
-        const errorData = (await response.json()) as {
-          error?: { message?: string } | string;
-        };
-        console.error("OpenAI API error:", response.status, errorData);
-        errorMessage =
-          typeof errorData.error === "object" && errorData.error?.message
-            ? errorData.error.message
-            : typeof errorData.error === "string"
-              ? errorData.error
-              : JSON.stringify(errorData);
-      } catch {
-        const text = await response.text();
-        console.error("OpenAI API error (non-JSON):", response.status, text);
-        errorMessage = text?.slice(0, 500) || errorMessage;
-      }
+    const result = await mintEphemeralSession(apiKey);
+    if (!result.ok) {
+      const betaHint =
+        result.message.includes("Beta API") || result.message.toLowerCase().includes("beta")
+          ? " For project-scoped keys add OPENAI_PROJECT_ID (+ OPENAI_ORG_ID) to .env.local. For EU endpoints set OPENAI_BASE_URL=https://eu.api.openai.com/v1"
+          : "";
       return NextResponse.json(
-        { error: `OpenAI API error: ${response.status} — ${errorMessage}` },
-        { status: response.status }
-      );
-    }
-
-    const data = (await response.json()) as {
-      client_secret?: { value?: string; expires_at?: number };
-      id?: string;
-      model?: string;
-      [key: string]: unknown;
-    };
-
-    const ephemeral = data.client_secret?.value;
-    if (!ephemeral?.startsWith("ek_")) {
-      console.error("/realtime/sessions OK but no ek_ in client_secret:", data);
-      return NextResponse.json(
-        {
-          error:
-            "OpenAI returned a session without an ephemeral key (ek_) in client_secret. Check server logs.",
-        },
-        { status: 502 }
+        { error: `OpenAI API error: ${result.status} — ${result.message}${betaHint}` },
+        { status: result.status }
       );
     }
 
     return NextResponse.json({
-      value: ephemeral,
-      expires_at: data.client_secret?.expires_at,
-      session: data,
+      value: result.value,
+      expires_at: result.expires_at,
+      session: result.session,
     });
   } catch (error) {
     console.error("Error in /session:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
