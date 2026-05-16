@@ -90,7 +90,6 @@ Voice uses the **general availability** Realtime flow, not the deprecated beta s
 - **Model slug**: Default is `gpt-realtime` in `src/app/lib/realtimeModel.ts` (change there and restart the dev server if your account uses a different GA model).
 
 Project root config is **`next.config.js`** (CommonJS). Use Node 18+.
-
 ## Installation
 
 1. Clone the repository:
@@ -109,7 +108,6 @@ npm install
 OPENAI_API_KEY=sk-...
 ```
 Do not commit `.env.local`. Restart the dev server after any env change.
-
 4. Run the development server:
 ```bash
 npm run dev
@@ -125,7 +123,6 @@ npm run dev
 | `npm run build`| Production build               |
 | `npm run start`| Run production server          |
 | `npm run lint` | ESLint                         |
-
 ## Current Residency
 
 **"Decolonizing the Digital"** - Beyond Gravity Festival  
@@ -194,7 +191,6 @@ The application is deployed on Vercel with automatic deployments from the main b
 | `OPENAI_API_KEY`    | Yes      | Server-side OpenAI API key. Used for Realtime client secrets, chat, images, and guardrail proxy routes. |
 
 Set the same variable in the hosting dashboard; never expose the key in client-side code.
-
 ## Contributing
 
 This is an active artistic research project. For collaboration inquiries, please contact the creators through their portfolios.
@@ -209,7 +205,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Co-Creation**: María Luisa Angulo  
 **Powered By**: OpenAI Realtime API (GA) & Agents SDK  
 **Last Updated**: May 2026
-
 ---
 
 © 2025 Pangea.IA | Decolonial AI Research Platform | Marlon Barrios Solano and Maria Luisa Angulo
