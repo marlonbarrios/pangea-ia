@@ -1,4 +1,5 @@
 import "@/app/lib/envSetup";
+import OpenAI, { APIError } from "openai";
 import { NextResponse } from "next/server";
 import { OPENAI_REALTIME_MODEL } from "@/app/lib/realtimeModel";
 import { getOpenAIApiKey } from "@/app/lib/openaiEnv";
@@ -11,68 +12,30 @@ export async function GET() {
       return NextResponse.json(
         {
           error:
-            "OPENAI_API_KEY is not set. Add it to `.env.local` in the project root (same folder as package.json), then restart `npm run dev`.",
+            "OPENAI_API_KEY is not set. Add it in Vercel (or `.env.local` locally), then redeploy / restart.",
         },
         { status: 500 }
       );
     }
 
-    const response = await fetch(
-      "https://api.openai.com/v1/realtime/client_secrets",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          expires_after: {
-            anchor: "created_at",
-            seconds: 600,
-          },
-          session: {
-            type: "realtime",
-            model: OPENAI_REALTIME_MODEL,
-          },
-        }),
-      }
-    );
-    
-    if (!response.ok) {
-      let errorMessage = "Unknown error";
-      try {
-        const errorData = await response.json();
-        console.error("OpenAI API error:", response.status, errorData);
-        errorMessage =
-          errorData.error?.message ??
-          (typeof errorData.error === "string" ? errorData.error : null) ??
-          JSON.stringify(errorData);
-      } catch {
-        const text = await response.text();
-        console.error("OpenAI API error (non-JSON):", response.status, text);
-        errorMessage = text?.slice(0, 500) || errorMessage;
-      }
-      return NextResponse.json(
-        { error: `OpenAI API error: ${response.status} — ${errorMessage}` },
-        { status: response.status }
-      );
-    }
-    
-    const data = (await response.json()) as Record<string, unknown>;
+    // Use the official client so `OpenAI-Organization` / `OpenAI-Project` are sent
+    // when `OPENAI_ORG_ID` / `OPENAI_PROJECT_ID` are set. Raw fetch omitted those
+    // headers and can hit the deprecated beta route with some keys (400:
+    // "Realtime Beta API is no longer supported").
+    const openai = new OpenAI({ apiKey });
 
-    const ephemeral =
-      typeof data.value === "string"
-        ? data.value
-        : typeof data.client_secret === "string"
-          ? data.client_secret
-          : typeof data.client_secret === "object" &&
-              data.client_secret !== null &&
-              "value" in data.client_secret &&
-              typeof (data.client_secret as { value?: unknown }).value === "string"
-            ? (data.client_secret as { value: string }).value
-            : undefined;
+    const data = await openai.realtime.clientSecrets.create({
+      expires_after: {
+        anchor: "created_at",
+        seconds: 600,
+      },
+      session: {
+        type: "realtime",
+        model: OPENAI_REALTIME_MODEL,
+      },
+    });
 
-    if (!ephemeral?.startsWith("ek_")) {
+    if (!data.value?.startsWith("ek_")) {
       console.error("client_secrets OK but no ek_ value in payload:", data);
       return NextResponse.json(
         {
@@ -84,12 +47,18 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      value: ephemeral,
+      value: data.value,
       expires_at: data.expires_at,
       session: data.session,
     });
   } catch (error) {
     console.error("Error in /session:", error);
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        { error: `OpenAI API error: ${error.status} — ${error.message}` },
+        { status: error.status ?? 500 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
