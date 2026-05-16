@@ -58,8 +58,36 @@ export async function GET() {
       );
     }
     
-    const data = await response.json();
-    return NextResponse.json(data);
+    const data = (await response.json()) as Record<string, unknown>;
+
+    const ephemeral =
+      typeof data.value === "string"
+        ? data.value
+        : typeof data.client_secret === "string"
+          ? data.client_secret
+          : typeof data.client_secret === "object" &&
+              data.client_secret !== null &&
+              "value" in data.client_secret &&
+              typeof (data.client_secret as { value?: unknown }).value === "string"
+            ? (data.client_secret as { value: string }).value
+            : undefined;
+
+    if (!ephemeral?.startsWith("ek_")) {
+      console.error("client_secrets OK but no ek_ value in payload:", data);
+      return NextResponse.json(
+        {
+          error:
+            "OpenAI returned a client_secrets response without an ephemeral key (ek_). Check server logs for the raw payload shape.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      value: ephemeral,
+      expires_at: data.expires_at,
+      session: data.session,
+    });
   } catch (error) {
     console.error("Error in /session:", error);
     return NextResponse.json(
